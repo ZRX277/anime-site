@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>موقع أنمي - كلو</title>
+  <style>
+    :root{
+      --bg:#07102a; --card:#0f1430; --muted:#9aa3b2; --accent:#ffcc00; --pink:#e91e63; --blue:#2196f3;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Tajawal",sans-serif;background:var(--bg);color:#fff;line-height:1.4}
+    header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#071230;gap:12px;flex-wrap:wrap}
+    header img#logo{height:64px}
+    nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    nav button{background:transparent;border:1px solid transparent;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
+    nav button:hover{color:var(--accent)}
+    .container{padding:18px;max-width:1200px;margin:0 auto}
+    .hero{text-align:center;padding:28px 8px}
+    .hero h1{color:var(--accent);margin:0 0 8px;font-size:28px}
+    .hero p{color:var(--muted);margin:0 0 12px}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:18px 0}
+    #search{padding:10px;border-radius:8px;border:none;width:320px;max-width:100%;font-size:16px}
+    select{padding:10px;border-radius:8px;border:none;background:#0a1030;color:#fff}
+
+    .btn{background:var(--accent);color:#000;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:700}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:22px}
+    .card{background:var(--card);border-radius:12px;padding:12px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.6)}
+    .card img{width:100%;height:280px;object-fit:cover;border-radius:8px;display:block}
+    .card h3{margin:10px 0 4px}
+    .meta{color:var(--muted);font-size:14px;margin-bottom:8px}
+    .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+    .btn-small{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
+    .watch{background:var(--accent);color:#000}
+    .fav{background:var(--pink);color:#fff}
+    .rate{background:var(--blue);color:#fff}
+    .avg{margin-top:8px;color:var(--muted);font-size:13px}
+    /* detail / episodes */
+    #detailView{display:none;padding:18px 0}
+    .detail-wrap{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+    .detail-left{background:#05061a;border-radius:12px;padding:12px}
+    .detail-right{background:var(--card);border-radius:12px;padding:12px;text-align:center}
+    .detail-left h2{color:var(--accent);margin:6px 0}
+    .detail-left p{color:var(--muted)}
+    .player{background:#000;border-radius:10px;padding:8px;margin:12px 0}
+    video{width:100%;border-radius:8px;display:block}
+    .episodes-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:12px}
+    .ep-card{background:#0b0b1a;padding:8px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px}
+    .ep-card img{width:100%;height:80px;object-fit:cover;border-radius:6px}
+    /* auth modal */
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:2000}
+    .auth-box{background:#101235;padding:18px;border-radius:10px;width:380px;max-width:94%}
+    .auth-box h3{color:var(--accent);margin:0 0 10px}
+    .auth-box input{width:100%;padding:10px;border-radius:8px;border:none;margin:8px 0;background:#08102a;color:#fff}
+    .auth-actions{display:flex;gap:8px;justify-content:space-between}
+    .small{font-size:13px;color:var(--muted)}
+    footer{padding:14px;text-align:center;color:var(--muted);margin-top:28px}
+    @media (max-width:900px){
+      .detail-wrap{grid-template-columns:1fr}
+      .card img{height:200px}
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img id="logo" src="https://h.top4top.io/p_3545i6z7i0.png" alt="logo">
+    <nav>
+      <button onclick="navTo('home')" id="nav-home">الرئيسية</button>
+      <button onclick="navTo('anime')" id="nav-anime">الأنميات</button>
+      <button onclick="navTo('favorites')" id="nav-fav">مفضلتي</button>
+      <button onclick="navTo('about')" id="nav-about">من نحن</button>
+      <button id="loginBtn" onclick="openAuth()">إنشاء حساب / دخول</button>
+      <button id="logoutBtn" style="display:none" onclick="logout()">تسجيل خروج</button>
+    </nav>
+  </header>
+
+  <div class="container">
+    <!-- HOME -->
+    <section id="home" style="display:block">
+      <div class="hero">
+        <h1>مرحباً في عالم الأنمي</h1>
+        <p class="small">استمتع بمشاهدة الأنميات المفضلة لديك. سجّل دخولك لحفظ المفضلة والتقييمات.</p>
+        <div style="margin-top:12px"><button class="btn" onclick="navTo('anime')">ابدأ متعتك</button></div>
+      </div>
+    </section>
+
+    <!-- ANIME LIST -->
+    <section id="anime" style="display:none">
+      <div style="text-align:center">
+        <div class="controls">
+          <input id="search" placeholder="ابحث عن أنمي..." />
+          <select id="category"><option value="all">الكل</option><option value="أكشن">أكشن</option><option value="دراما">دراما</option><option value="سبيستون">سبيستون</option></select>
+          <button class="btn" onclick="renderGrid()">عرض الكل</button>
+        </div>
+      </div>
+      <div id="grid" class="grid"></div>
+    </section>
+
+    <!-- DETAIL & EPISODES VIEW -->
+    <section id="detailView">
+      <div class="back" style="margin-bottom:12px"><button class="btn-small" onclick="navTo('anime')">⬅️ رجوع لقائمة الأنميات</button></div>
+      <div class="detail-wrap">
+        <div class="detail-left">
+          <h2 id="detailTitle"></h2>
+          <p id="detailMeta" class="meta"></p>
+          <p id="detailDesc" style="color:var(--muted)"></p>
+
+          <div class="player">
+            <video id="video" controls preload="metadata" poster="">
+              <source id="videoSrc" src="" type="video/mp4">
+              متصفحك لا يدعم تشغيل الفيديو.
+            </video>
+          </div>
+
+          <h3 style="color:var(--accent)">الحلقات</h3>
+          <div id="episodesList" class="episodes-list"></div>
+        </div>
+
+        <aside class="detail-right">
+          <img id="detailPoster" src="" alt="poster" style="width:100%;border-radius:8px;margin-bottom:8px">
+          <p class="small" id="studio"></p>
+          <p class="small" id="year"></p>
+          <p class="small" id="genre"></p>
+          <div style="margin-top:12px">
+            <button class="btn-small watch" id="favToggle" onclick="">♡ مفضلة</button>
+            <button class="btn-small rate" onclick="promptRate(currentAnimeId)">★ قيّم</button>
+          </div>
+          <div class="avg" id="avgDetail" style="margin-top:10px"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- FAVORITES -->
+    <section id="favorites" style="display:none">
+      <h2 style="color:var(--accent)">مفضلتي</h2>
+      <div id="favGrid" class="grid"></div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" style="display:none">
+      <h2 style="color:var(--accent)">من نحن</h2>
+      <p class="small">نحن فريق شغوف بالأنمي، 🎊 نصنع تجربة مشاهدة ممتعة وسهلة. جميع الانمي مجانا 💞 ونشر في 💢 الأنمي مستمر معا فريق دعم وشكرأ جزيلأ</p>
+    </section>
+
+  </div>
+
+  <footer>© 2025 جميع الحقوق محفوظة - تصميم مالك موقع</footer>
+
+  <!-- AUTH MODAL -->
+  <div id="authModal" class="modal" onclick="if(event.target===this)closeAuth()">
+    <div class="auth-box">
+      <h3>تسجيل / تسجيل دخول</h3>
+      <input id="authEmail" placeholder="البريد الإلكتروني أو اسم المستخدم" type="text" />
+      <input id="authPassword" placeholder="كلمة المرور" type="password" />
+      <div class="auth-actions" style="margin-top:8px">
+        <button class="btn" onclick="signup()">إنشاء حساب</button>
+        <button class="btn" onclick="signin()">تسجيل دخول</button>
+      </div>
+      <p id="authMsg" class="small"></p>
+    </div>
+  </div>
+
+  <script>
+    /*********************
+     بيانات الأنميات (مُدمجة من كودك وروابط الصور)
+     كل أنمي: id, title, poster, description, year, studio, genre, episodes[{num,url,thumb}]
+    *********************/
+    const animeData = {
+      naruto: {
+        id:'naruto',
+        title:'ناروتو',
+        poster:'https://k.top4top.io/p_3405j700g0.jpg',
+        description:'قصة النينجا الشاب ناروتو الذي يسعى ليصبح الهوكاجي ويتغلب على تحديات عديدة.',
+        year:2002,
+        studio:'استوديو Pierrot',
+        genre:'أكشن',
+        episodes:[
+          {num:1,url:"https://e.top4top.io/m_34716uv399.mp4", thumb:"https://k.top4top.io/p_3405j700g0.jpg"},
+          {num:2,url:"https://b.top4top.io/m_3471l35799.mp4", thumb:"https://k.top4top.io/p_3405j700g0.jpg"},
+          {num:3,url:"https://a.top4top.io/m_3472ov4y80.mp4", thumb:"https://k.top4top.io/p_3405j700g0.jpg"},
+          {num:4,url:"https://h.top4top.io/m_3472zeixo0.mp4", thumb:"https://k.top4top.io/p_3405j700g0.jpg"}
+        ]
+      },
+      abyss:{
+        id:'abyss',
+        title:'صانع الهاوية',
+        poster:'https://a.top4top.io/p_3471cmuq60.png',
+        description:'أنمي مظلم عن استكشاف الغابات والأساطير، يواجه فيها الأبطال مخاطر عظيمة.',
+        year:2019,
+        studio:'استوديو AbyssWorks',
+        genre:'دراما',
+        episodes:[
+          {num:1,url:"https://example.com/abyss-1.mp4", thumb:"https://a.top4top.io/p_3471cmuq60.png"},
+          {num:2,url:"https://example.com/abyss-2.mp4", thumb:"https://a.top4top.io/p_3471cmuq60.png"}
+        ]
+      },
+      dbs:{
+        id:'dbs',
+        title:'دراغون بول سوبر',
+        poster:'https://l.top4top.io/p_347105zly9.jpg',
+        description:'مغامرات جوكو وأصدقائه مع أساطير جديدة وأعداء أقوى.',
+        year:2015,
+        studio:'Toei Animation',
+        genre:'أكشن',
+        episodes:[
+          {num:1,url:"https://example.com/dbs-1.mp4", thumb:"https://l.top4top.io/p_347105zly9.jpg"},
+          {num:2,url:"https://example.com/dbs-2.mp4", thumb:"https://l.top4top.io/p_347105zly9.jpg"}
+        ]
+      },
+      mirai:{
+        id:'mirai',
+        title:'ميراي',
+        poster:'https://b.top4top.io/p_3472d8ii00.jpg',
+        description:'قصة عائلية/خيالية تتبع مغامرات فتاة اسمها ميراي وعائلتها.',
+        year:2018,
+        studio:'Studio Mirai',
+        genre:'سبيستون',
+        episodes:[
+          {num:1,url:"https://e.top4top.io/m_mirai_ep1.mp4", thumb:"https://b.top4top.io/p_3472d8ii00.jpg"}
+        ]
+      }
+    };
+
+    // ------------- حالة التطبيق و DOM -------------
+    let currentUser = null; // username string
+    let currentAnimeId = null;
+
+    const sections = {
+      home: document.getElementById('home'),
+      anime: document.getElementById('anime'),
+      detail: document.getElementById('detailView'),
+      favorites: document.getElementById('favorites'),
+      about: document.getElementById('about')
+    };
+    const grid = document.getElementById('grid');
+    const searchInput = document.getElementById('search');
+    const category = document.getElementById('category');
+
+    // ------------- التخزين المحلي للمستخدمين والمفضلات والتقييمات -------------
+    // users stored in localStorage as "users" : {username: password}
+    // favorites per user: key `${username}_favs` -> JSON array of anime ids
+    // ratings per user: key `${username}_ratings` -> { animeId: rating }
+    function saveUser(username,password){
+      const users = JSON.parse(localStorage.getItem('users')||'{}');
+      users[username] = password;
+      localStorage.setItem('users', JSON.stringify(users));
+    }
+    function validLogin(username,password){
+      const users = JSON.parse(localStorage.getItem('users')||'{}');
+      return users[username] && users[username] === password;
+    }
+    function setCurrentUser(username){
+      currentUser = username;
+      localStorage.setItem('currentUser', username);
+      updateAuthUI();
+      updateFavButtons();
+      renderFavorites(); // refresh fav view if open
+      updateAllAvg();
+    }
+    function clearCurrentUser(){
+      currentUser = null;
+      localStorage.removeItem('currentUser');
+      updateAuthUI();
+      updateFavButtons();
+    }
+
+    // ------------- التصيير (render) -------------
+    function renderGrid(){
+      grid.innerHTML = '';
+      const q = (searchInput.value||'').trim().toLowerCase();
+      const cat = category.value;
+      Object.values(animeData).forEach(a=>{
+        if(cat !== 'all' && a.genre !== cat) return;
+        if(q && !a.title.toLowerCase().includes(q)) return;
+        const div = document.createElement('div'); div.className='card';
+        div.innerHTML = `
+          <img src="${a.poster}" alt="${a.title}">
+          <h3>${a.title}</h3>
+          <p class="meta">${a.genre} • ${a.year}</p>
+          <div class="row">
+            <button class="btn-small watch" onclick="openDetail('${a.id}')">مشاهدة الآن</button>
+            <button class="btn-small fav" id="favbtn-${a.id}" onclick="toggleFav('${a.id}')">♡ مفضلة</button>
+            <button class="btn-small rate" onclick="promptRate('${a.id}')">★ قيّم</button>
+          </div>
+          <div class="avg" id="avg-${a.id}">جاري حساب التقييم...</div>
+        `;
+        grid.appendChild(div);
+      });
+      updateAllAvg();
+      updateFavButtons();
+    }
+
+    // ------------- تفاصيل الأنمي + حلقات -------------
+    function openDetail(id){
+      const a = animeData[id];
+      if(!a) return;
+      currentAnimeId = id;
+      // hide others
+      Object.values(sections).forEach(s=>s.style.display='none');
+      sections.detail.style.display = 'block';
+      // fill details
+      document.getElementById('detailTitle').innerText = a.title;
+      document.getElementById('detailMeta').innerText = `${a.genre} • ${a.year} • ${a.studio}`;
+      document.getElementById('detailDesc').innerText = a.description;
+      document.getElementById('detailPoster').src = a.poster;
+      document.getElementById('studio').innerText = 'الاستوديو: ' + a.studio;
+      document.getElementById('year').innerText = 'سنة الإنتاج: ' + a.year;
+      document.getElementById('genre').innerText = 'التصنيف: ' + a.genre;
+      // player clean
+      const player = document.getElementById('video');
+      player.pause();
+      player.src = '';
+      document.getElementById('videoSrc').src = '';
+      player.load();
+      // episodes thumbnails
+      const list = document.getElementById('episodesList'); list.innerHTML = '';
+      a.episodes.forEach(ep=>{
+        const e = document.createElement('div'); e.className='ep-card';
+        e.innerHTML = `<img src="${ep.thumb}" alt="thumb"><div>حلقة ${ep.num}</div>`;
+        e.onclick = ()=>{
+          player.src = ep.url;
+          player.play();
+        };
+        list.appendChild(e);
+      });
+      // fav button label
+      updateFavButtons();
+      // avg rating
+      updateAllAvg();
+    }
+    function navTo(page){
+      // hide all
+      Object.values(sections).forEach(s=>s.style.display='none');
+      if(page==='home') sections.home.style.display='block';
+      if(page==='anime') { sections.anime.style.display='block'; renderGrid(); }
+      if(page==='favorites') { sections.favorites.style.display='block'; renderFavorites(); }
+      if(page==='about') sections.about.style.display='block';
+    }
+    function updateFavButtons(){
+      for(const id in animeData){
+        const btn = document.getElementById('favbtn-'+id);
+        if(!btn) continue;
+        if(!currentUser){ btn.innerText = '♡ مفضلة'; continue; }
+        const favs = JSON.parse(localStorage.getItem(currentUser + '_favs')||'[]');
+        btn.innerText = favs.includes(id) ? '♥ مفضلة' : '♡ مفضلة';
+        // also set aside fav toggle in detail view if open
+        const favToggle = document.getElementById('favToggle');
+        if(favToggle && currentAnimeId){
+          const favs2 = JSON.parse(localStorage.getItem(currentUser + '_favs')||'[]');
+          favToggle.innerText = favs2.includes(currentAnimeId) ? '♥ مفضلة' : '♡ مفضلة';
+          favToggle.onclick = ()=>toggleFav(currentAnimeId);
+        }
+      }
+    }
+
+    function toggleFav(id){
+      if(!currentUser){ openAuth(); return; }
+      const key = currentUser + '_favs';
+      const favs = JSON.parse(localStorage.getItem(key)||'[]');
+      const idx = favs.indexOf(id);
+      if(idx>=0) favs.splice(idx,1);
+      else favs.push(id);
+      localStorage.setItem(key, JSON.stringify(favs));
+      updateFavButtons();
+      renderFavorites();
+    }
+
+    // ------------- favorites view -------------
+    function renderFavorites(){
+      const favGrid = document.getElementById('favGrid'); favGrid.innerHTML = '';
+      if(!currentUser){ favGrid.innerHTML = '<p class="small">سجل دخول لعرض المفضلة</p>'; return; }
+      const favs = JSON.parse(localStorage.getItem(currentUser + '_favs')||'[]');
+      if(favs.length===0){ favGrid.innerHTML = '<p class="small">لا توجد أنميات مفضلة</p>'; return; }
+      favs.forEach(id=>{
+        const a = animeData[id];
+        if(!a) return;
+        const div = document.createElement('div'); div.className='card';
+        div.innerHTML = `<img src="${a.poster}" alt="${a.title}"><h3>${a.title}</h3><p class="meta">${a.genre} • ${a.year}</p>
+          <div class="row"><button class="btn-small watch" onclick="openDetail('${a.id}')">▶ مشاهدة</button>
+          <button class="btn-small fav" onclick="toggleFav('${a.id}')">إزالة</button></div>
+          <div class="avg" id="avg-fav-${a.id}">جارٍ حساب التقييم...</div>`;
+        favGrid.appendChild(div);
+      });
+      updateAllAvg();
+    }
+
+    // ------------- auth (localStorage) -------------
+    function openAuth(){ document.getElementById('authModal').style.display='flex'; document.getElementById('authMsg').innerText=''; }
+    function closeAuth(){ document.getElementById('authModal').style.display='none'; }
+    function signup(){
+      const uname = document.getElementById('authEmail').value.trim();
+      const pwd = document.getElementById('authPassword').value;
+      if(!uname || !pwd){ document.getElementById('authMsg').innerText='ادخل اسم المستخدم و كلمة المرور'; return; }
+      const users = JSON.parse(localStorage.getItem('users')||'{}');
+      if(users[uname]){ document.getElementById('authMsg').innerText='المستخدم موجود بالفعل'; return; }
+      users[uname]=pwd;
+      localStorage.setItem('users', JSON.stringify(users));
+      setCurrentUser(uname);
+      closeAuth();
+      alert('تم إنشاء الحساب وتسجيل الدخول');
+    }
+    function signin(){
+      const uname = document.getElementById('authEmail').value.trim();
+      const pwd = document.getElementById('authPassword').value;
+      if(!uname || !pwd){ document.getElementById('authMsg').innerText='ادخل اسم المستخدم و كلمة المرور'; return; }
+      if(validLogin(uname,pwd)){ setCurrentUser(uname); closeAuth(); alert('تم تسجيل الدخول'); }
+      else { document.getElementById('authMsg').innerText='خطأ: اسم مستخدم أو كلمة مرور'; }
+    }
+    function validLogin(u,p){
+      const users = JSON.parse(localStorage.getItem('users')||'{}');
+      return users[u] && users[u] === p;
+    }
+    function logout(){
+      clearCurrentUser();
+      alert('تم تسجيل الخروج');
+      navTo('home');
+    }
+
+    // ------------- ratings -------------
+    function promptRate(animeId){
+      if(!currentUser){ openAuth(); return; }
+      const v = prompt('قيّم الأنمي من 1 إلى 5 ⭐');
+      if(!v) return;
+      const n = parseInt(v);
+      if(isNaN(n) || n<1 || n>5){ alert('ادخل رقم بين 1 و 5'); return; }
+      const key = currentUser + '_ratings';
+      const obj = JSON.parse(localStorage.getItem(key)||'{}');
+      obj[animeId] = n;
+      localStorage.setItem(key, JSON.stringify(obj));
+      alert('تم حفظ التقييم');
+      updateAllAvg();
+    }
+
+    // compute avg across all local users ratings
+    function computeAvgLocal(animeId){
+      let sum=0, cnt=0;
+      for(const k in localStorage){
+        if(k.endsWith('_ratings')){
+          try{
+            const obj = JSON.parse(localStorage.getItem(k));
+            if(obj && obj[animeId]){ sum += Number(obj[animeId]); cnt++; }
+          }catch(e){}
+        }
+      }
+      if(cnt===0) return {avg:0,count:0};
+      return {avg:sum/cnt,count:cnt};
+    }
+
+    async function updateAllAvg(){
+      for(const id in animeData){
+        const el = document.getElementById('avg-'+id);
+        const favEl = document.getElementById('avg-fav-'+id);
+        const info = computeAvgLocal(id);
+        const text = info.count ? `التقييم: ${info.avg.toFixed(1)} / 5 (${info.count} مقيم)` : 'لا توجد تقييمات بعد';
+        if(el) el.innerText = text;
+        if(favEl) favEl.innerText = text;
+        const detailAvg = document.getElementById('avgDetail');
+        if(currentAnimeId === id && detailAvg) detailAvg.innerText = text;
+      }
+    }
+
+    // ------------- startup -------------
+    function init(){
+      // restore user if exists
+      const u = localStorage.getItem('currentUser');
+      if(u){ currentUser = u; updateAuthUI(); }
+      // events
+      searchInput.addEventListener('input', renderGrid);
+      category.addEventListener('change', renderGrid);
+      renderGrid();
+    }
+    function updateAuthUI(){
+      const loginBtn = document.getElementById('loginBtn');
+      const logoutBtn = document.getElementById('logoutBtn');
+      if(currentUser){ loginBtn.style.display='none'; logoutBtn.style.display='inline-block'; }
+      else { loginBtn.style.display='inline-block'; logoutBtn.style.display='none'; }
+      // if on favorites view, refresh
+      if(document.getElementById('favorites').style.display !== 'none') renderFavorites();
+    }
+
+    // ------------- helpers exposed for inline onclicks -------------
+    window.navTo = navTo;
+    window.openDetail = openDetail;
+    window.openAuth = openAuth;
+    window.closeAuth = closeAuth;
+    window.signup = signup;
+    window.signin = signin;
+    window.logout = logout;
+    window.toggleFav = toggleFav;
+    window.promptRate = promptRate;
+    window.openDetail = openDetail;
+    window.renderGrid = renderGrid;
+    window.renderFavorites = renderFavorites;
+    window.updateAllAvg = updateAllAvg;
+
+    // init app
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
